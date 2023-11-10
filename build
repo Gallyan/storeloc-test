@@ -2,5 +2,5 @@
 cp .env.example .env
 sed -ri -e "s/%UID%/$(id -u)/g" .env
 sed -ri -e "s/%GID%/$(id -g)/g" .env
-docker compose up -d
-docker compose exec -u www-data app composer install
+docker-compose up -d
+docker-compose exec -u www-data app composer install
