@@ -8,7 +8,7 @@
             <input type="search" name="e" placeholder="Longitude est" />
         </div>
         <div class="filters">
-            <select multiple name="services">
+            <select multiple name="services[]">
                 @foreach ($services as $service)
                     <option value="{{ $service->id }}">{{ $service->name }}</option>
                 @endforeach
