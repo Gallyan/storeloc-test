@@ -10,7 +10,7 @@
         <div class="filters">
             <select multiple name="services[]">
                 @foreach ($services as $service)
-                    <option value="{{ $service->id }}">{{ $service->name }}</option>
+                    <option value="{{ $service->id }}">{{ __($service->name) }}</option>
                 @endforeach
             </select>
             <select name="operator">
