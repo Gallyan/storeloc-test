@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class Store extends Model
@@ -15,7 +15,8 @@ class Store extends Model
      *
      * @var false, string
      */
-    public function getOpenNowAttribute() {
+    public function getOpenNowAttribute()
+    {
         $horaires = json_decode($this->hours,true);
         $today = Carbon::today()->format('l');
 
@@ -31,4 +32,27 @@ class Store extends Model
         }
         return false;
     }
+
+    /**
+     * The services list that belong to the store : serv, ice, list
+     */
+    public function getServicesEnumAttribute()
+    {
+        return cache()->remember(
+            'store_' . $this->id . '_services',
+            30, // 30 secondes seulement pour pouvoir vérifier que cela fonctionne
+            function() {
+                return $this->belongsToMany( Service::class )->get()->pluck('name')->implode(', ');
+            }
+        );
+    }
+
+    /**
+     * The services list that belong to the store .
+     */
+    public function services()
+    {
+        return $this->belongsToMany( Service::class );
+    }
+
 }
