@@ -17,18 +17,22 @@ class Store extends Model
      */
     public function getOpenNowAttribute()
     {
-        $horaires = json_decode($this->hours,true);
+        $horaires = json_decode($this->hours, true);
         $today = Carbon::today()->format('l');
 
-        if ( !isset( $horaires[$today] ) ) return false;
+        if (!isset($horaires[$today])) {
+            return false;
+        }
 
-        foreach( $horaires[$today] as $plage ) {
-            $tranche = explode( '-', $plage );
+        foreach ($horaires[$today] as $plage) {
+            $tranche = explode('-', $plage);
 
-            $start = Carbon::createFromTimeString( $tranche[0] );
-            $end   = Carbon::createFromTimeString( $tranche[1] );
+            $start = Carbon::createFromTimeString($tranche[0]);
+            $end   = Carbon::createFromTimeString($tranche[1]);
 
-            if ( Carbon::now()->between($start, $end) ) return $end;
+            if (Carbon::now()->between($start, $end)) {
+                return $end;
+            }
         }
         return false;
     }
@@ -41,8 +45,8 @@ class Store extends Model
         return cache()->remember(
             'store_' . $this->id . '_services',
             30, // 30 secondes seulement pour pouvoir vérifier que cela fonctionne
-            function() {
-                return $this->belongsToMany( Service::class )->get()->pluck('name')->implode(', ');
+            function () {
+                return $this->belongsToMany(Service::class)->get()->pluck('name')->implode(', ');
             }
         );
     }
@@ -52,7 +56,6 @@ class Store extends Model
      */
     public function services()
     {
-        return $this->belongsToMany( Service::class );
+        return $this->belongsToMany(Service::class);
     }
-
 }

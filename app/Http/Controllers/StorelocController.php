@@ -21,15 +21,16 @@ class StorelocController extends Controller
     }
 
     /**
-	 * Search stores.
-	 *
-	 * @param  \Illuminate\Http\StorelocGetRequest  $request
-	 * @return \Illuminate\Http\Response
-	 */
+     * Search stores.
+     *
+     * @param  \Illuminate\Http\StorelocGetRequest  $request
+     * @return \Illuminate\Http\Response
+     */
     public function results(StorelocGetRequest $request)
     {
         // Retrieve the validated input data and initialise missing
-        $search = array_merge([
+        $search = array_merge(
+            [
             'n' => null,
             'e' => null,
             's' => null,
@@ -40,55 +41,53 @@ class StorelocController extends Controller
             $request->validated()
         );
 
-        if ( isset($search['services']) ) {
-
-            if ( $search['operator'] === 'OR' ) {
-
+        if (isset($search['services'])) {
+            if ($search['operator'] === 'OR') {
                 $stores_id = cache()->remember(
-                    'OR_'.implode('_',$search['services']),
+                    'OR_' . implode('_', $search['services']),
                     5,
                     fn() => DB::table('service_store')
-                                ->whereIn( 'service_id', $search['services'] )
+                                ->whereIn('service_id', $search['services'])
                                 ->pluck('store_id')
                 );
-
             } elseif ($search['operator'] === 'AND') {
-
                 $stores_id = cache()->remember(
-                    'AND_'.implode('_',$search['services']),
+                    'AND_' . implode('_', $search['services']),
                     5,
-                    function() use ($search) {
+                    function () use ($search) {
                         $stores_id = Store::pluck('id');
-                        foreach( $search['services'] as $s ) {
+                        foreach ($search['services'] as $s) {
                             $stores_id = $stores_id->intersect(
                                 DB::table('service_store')
-                                    ->whereServiceId( $s )
+                                    ->whereServiceId($s)
                                     ->pluck('store_id')
                             );
                         }
                         return $stores_id;
-                });
+                    }
+                );
             }
         }
 
         // Latitude : -90° S // +90° N
         // Longitude : -180° E // +180° W
         $query = Store::query()
-            ->when($search['n'], fn($query,$north) => $query->where('stores.lat','<',$north))
-            ->when($search['s'], fn($query,$south) => $query->where('stores.lat','>',$south))
-            ->when($search['e'], fn($query,$east) => $query->where('stores.lng','>',$east))
-            ->when($search['w'], fn($query,$west) => $query->where('stores.lng','<',$west))
-            ->when($search['services'], fn($query) => $query->whereIn('id', $stores_id) );
+            ->when($search['n'], fn($query, $north) => $query->where('stores.lat', '<', $north))
+            ->when($search['s'], fn($query, $south) => $query->where('stores.lat', '>', $south))
+            ->when($search['e'], fn($query, $east) => $query->where('stores.lng', '>', $east))
+            ->when($search['w'], fn($query, $west) => $query->where('stores.lng', '<', $west))
+            ->when($search['services'], fn($query) => $query->whereIn('id', $stores_id));
 
-        $cache_key = sha1( json_encode( $search ) );
+        $cache_key = sha1(json_encode($search));
 
         return view('stores.index')
-            ->with( 'stores',
-            cache()->remember(
-                'stores_list_'.$cache_key,
-                15, // 15 secondes seulement pour pouvoir vérifier que cela fonctionne
-                fn() => $query->get()
-            )
-        );
+            ->with(
+                'stores',
+                cache()->remember(
+                    'stores_list_' . $cache_key,
+                    15, // 15 secondes seulement pour pouvoir vérifier que cela fonctionne
+                    fn() => $query->get()
+                )
+            );
     }
 }
