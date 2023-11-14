@@ -28,10 +28,19 @@ class StorelocController extends Controller
 	 */
     public function results(StorelocGetRequest $request)
     {
-        // Retrieve the validated input data...
-        $search = $request->validated();
+        // Retrieve the validated input data and initialise missing
+        $search = array_merge([
+            'n' => null,
+            'e' => null,
+            's' => null,
+            'w' => null,
+            'services' => [],
+            'operator' => 'OR',
+            ],
+            $request->validated()
+        );
 
-        if ( isset($search['services']) && isset($search['operator']) ) {
+        if ( isset($search['services']) ) {
 
             if ( $search['operator'] === 'OR' ) {
 
@@ -65,11 +74,11 @@ class StorelocController extends Controller
         // Latitude : -90° S // +90° N
         // Longitude : -180° E // +180° W
         $query = Store::query()
-            ->when(isset($search['n']), fn($query,$north) => $query->where('stores.lat','<',$north))
-            ->when(isset($search['s']), fn($query,$south) => $query->where('stores.lat','>',$south))
-            ->when(isset($search['e']), fn($query,$east) => $query->where('stores.lng','>',$east))
-            ->when(isset($search['w']), fn($query,$west) => $query->where('stores.lng','<',$west))
-            ->when(isset($search['services']), fn($query) => $query->whereIn('id', $stores_id) );
+            ->when($search['n'], fn($query,$north) => $query->where('stores.lat','<',$north))
+            ->when($search['s'], fn($query,$south) => $query->where('stores.lat','>',$south))
+            ->when($search['e'], fn($query,$east) => $query->where('stores.lng','>',$east))
+            ->when($search['w'], fn($query,$west) => $query->where('stores.lng','<',$west))
+            ->when($search['services'], fn($query) => $query->whereIn('id', $stores_id) );
 
         $cache_key = sha1( json_encode( $search ) );
 
