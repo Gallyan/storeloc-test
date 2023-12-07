@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Carbon\Carbon;
 
 class Store extends Model
@@ -54,7 +55,7 @@ class Store extends Model
     /**
      * The services list that belong to the store .
      */
-    public function services()
+    public function services(): BelongsToMany
     {
         return $this->belongsToMany(Service::class);
     }
