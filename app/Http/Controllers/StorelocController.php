@@ -46,8 +46,8 @@ class StorelocController extends Controller
                 $stores_id = cache()->remember(
                     'OR_' . implode('_', $search['services']),
                     5,
-                    fn() => DB::table('service_store')
-                                ->whereIn('service_id', $search['services'])
+                    fn() => Service::whereIn('id',$search['services'])
+                                ->join('service_store','service_store.service_id','services.id')
                                 ->pluck('store_id')
                 );
             } elseif ($search['operator'] === 'AND') {
@@ -58,8 +58,8 @@ class StorelocController extends Controller
                         $stores_id = Store::pluck('id');
                         foreach ($search['services'] as $s) {
                             $stores_id = $stores_id->intersect(
-                                DB::table('service_store')
-                                    ->whereServiceId($s)
+                                Service::whereId($s)
+                                    ->join('service_store','service_store.service_id','services.id')
                                     ->pluck('store_id')
                             );
                         }
