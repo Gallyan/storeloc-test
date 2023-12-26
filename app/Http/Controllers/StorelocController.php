@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Store;
 use App\Models\Service;
-use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StorelocGetRequest;
 
 class StorelocController extends Controller
